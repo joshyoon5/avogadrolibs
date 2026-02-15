@@ -46,6 +46,7 @@ public slots:
   void multiBonds(bool show);
   void showHydrogens(bool show);
   void opacityChanged(int value);
+  void resetToDefaults();
 
 private:
   Rendering::GroupNode* m_group;
