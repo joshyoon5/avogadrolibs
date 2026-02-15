@@ -43,6 +43,12 @@ public:
   ~ScenePlugin() override;
 
   /**
+ * Reset plugin settings to their default values.
+ */
+virtual void resetToDefaults() {}
+  
+
+  /**
    * Process the supplied atom, and add the necessary primitives to the scene.
    */
   virtual void process(const QtGui::Molecule& molecule,
@@ -50,7 +56,7 @@ public:
 
   virtual void processEditable(const RWMolecule& molecule,
                                Rendering::GroupNode& node);
-
+  
   /**
    * The name of the scene plugin, will be displayed in the user interface.
    */
