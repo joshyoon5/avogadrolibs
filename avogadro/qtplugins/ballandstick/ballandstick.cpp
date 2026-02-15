@@ -137,7 +137,10 @@ struct LayerBallAndStick : Core::LayerData
       QObject::connect(check, &QCheckBox::clicked, slot,
                        &BallAndStick::showHydrogens);
       v->addWidget(check);
-
+      auto* resetButton = new QPushButton(QObject::tr("Reset to Defaults"));
+      QObject::connect(resetButton, &QPushButton::clicked, slot,
+                 &BallAndStick::resetToDefaults);
+      v->addWidget(resetButton);
       v->addStretch(1);
       widget->setLayout(v);
     }
@@ -329,6 +332,45 @@ void BallAndStick::opacityChanged(int opacity)
 
   QSettings settings;
   settings.setValue("ballandstick/opacity", m_opacity);
+}
+//NEW CHANGE, RESET TO DEFAULTS BUTTON
+void BallAndStick::resetToDefaults()
+{
+  // default values match the constructor
+  constexpr float DefaultAtomScale = 0.3f;
+  constexpr float DefaultBondRadius = 0.1f;
+  constexpr float DefaultOpacity = 1.0f;
+  constexpr bool DefaultMultiBonds = true;
+  constexpr bool DefaultShowHydrogens = true;
+
+  // update plugin state
+  m_atomScale = DefaultAtomScale;
+  m_bondRadius = DefaultBondRadius;
+  m_opacity = DefaultOpacity;
+
+  // update layer data
+  auto* interface = m_layerManager.getSetting<LayerBallAndStick>();
+  interface->atomScale = DefaultAtomScale;
+  interface->bondRadius = DefaultBondRadius;
+  interface->opacity = DefaultOpacity;
+  interface->multiBonds = DefaultMultiBonds;
+  interface->showHydrogens = DefaultShowHydrogens;
+
+  // persist settings
+  QSettings settings;
+  settings.setValue("ballandstick/atomScale", DefaultAtomScale);
+  settings.setValue("ballandstick/bondRadius", DefaultBondRadius);
+  settings.setValue("ballandstick/opacity", DefaultOpacity);
+  settings.setValue("ballandstick/multiBonds", DefaultMultiBonds);
+  settings.setValue("ballandstick/showHydrogens", DefaultShowHydrogens);
+
+  // rebuild the UI if it exists
+  if (interface->widget) {
+    interface->widget->deleteLater();
+    interface->widget = nullptr;
+  }
+
+  emit drawablesChanged();
 }
 
 void BallAndStick::atomRadiusChanged(int value)
