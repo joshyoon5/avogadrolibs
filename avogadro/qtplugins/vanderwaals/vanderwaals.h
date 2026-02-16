@@ -43,8 +43,7 @@ public:
 
 public slots:
   void setOpacity(int opacity);
-  //resetToDefaults() is new, has been added for reset button
-  void resetToDefaults();
+
 private:
   std::string m_name = "Van der Waals";
   QWidget* m_setupWidget = nullptr;

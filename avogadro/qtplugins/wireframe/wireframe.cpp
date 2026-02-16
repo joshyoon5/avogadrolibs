@@ -108,10 +108,7 @@ struct LayerWireframe : Core::LayerData
       QObject::connect(check, &QCheckBox::clicked, slot,
                        &Wireframe::showHydrogens);
       v->addWidget(check);
-      auto* resetButton = new QPushButton(QObject::tr("Reset to Defaults"));
-      QObject::connect(resetButton, &QPushButton::clicked, slot,
-                 &Wireframe::resetToDefaults);
-      v->addWidget(resetButton);
+
       v->addStretch(1);
       widget->setLayout(v);
     }
@@ -194,54 +191,6 @@ QWidget* Wireframe::setupWidget()
   auto* interface = m_layerManager.getSetting<LayerWireframe>();
   interface->setupWidget(this);
   return interface->widget;
-}
-
-void Wireframe::resetToDefaults()
-{
-  constexpr bool defaultMultiBonds = true;
-  constexpr bool defaultShowHydrogens = true;
-  constexpr float defaultLineWidth = 1.0f;
-
-  auto* interface = m_layerManager.getSetting<LayerWireframe>();
-
-  bool changed = false;
-
-  if (interface->multiBonds != defaultMultiBonds) {
-    interface->multiBonds = defaultMultiBonds;
-    changed = true;
-  }
-
-  if (interface->showHydrogens != defaultShowHydrogens) {
-    interface->showHydrogens = defaultShowHydrogens;
-    changed = true;
-  }
-
-  if (interface->lineWidth != defaultLineWidth) {
-    interface->lineWidth = defaultLineWidth;
-    changed = true;
-  }
-
-  if (changed)
-    emit drawablesChanged();
-
-  // keep defaults
-  QSettings settings;
-  settings.setValue("wireframe/multiBonds", defaultMultiBonds);
-  settings.setValue("wireframe/showHydrogens", defaultShowHydrogens);
-  settings.setValue("wireframe/lineWidth", defaultLineWidth);
-
-  // sync the UI widgets
-  if (interface->widget) {
-    auto spins = interface->widget->findChildren<QDoubleSpinBox*>();
-    if (!spins.isEmpty())
-      spins.first()->setValue(defaultLineWidth);
-
-    auto checks = interface->widget->findChildren<QCheckBox*>();
-    if (checks.size() >= 2) {
-      checks[0]->setChecked(defaultMultiBonds);
-      checks[1]->setChecked(defaultShowHydrogens);
-    }
-  }
 }
 
 void Wireframe::multiBonds(bool show)
