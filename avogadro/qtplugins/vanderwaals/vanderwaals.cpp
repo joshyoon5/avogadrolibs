@@ -5,6 +5,8 @@
 
 #include "vanderwaals.h"
 
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
 #include <avogadro/core/elements.h>
 #include <avogadro/qtgui/molecule.h>
 #include <avogadro/rendering/geometrynode.h>
@@ -62,6 +64,7 @@ struct LayerVdW : Core::LayerData
   {
     if (!widget) {
       widget = new QWidget(qobject_cast<QWidget*>(slot->parent()));
+      auto* v = new QVBoxLayout;
       auto* form = new QFormLayout;
 
       // Opacity
@@ -73,7 +76,13 @@ struct LayerVdW : Core::LayerData
                        &VanDerWaals::setOpacity);
 
       form->addRow(QObject::tr("Opacity:"), slider);
-      widget->setLayout(form);
+      auto* resetButton = new QPushButton(QObject::tr("Reset to Defaults"));
+      QObject::connect(resetButton, &QPushButton::clicked, slot,
+                 &VanDerWaals::resetToDefaults);
+      v->addLayout(form);
+      v->addWidget(resetButton);
+      v->addStretch(1);
+      widget->setLayout(v);
     }
   }
 };
@@ -140,7 +149,27 @@ void VanDerWaals::process(const QtGui::Molecule& molecule,
     }
   }
 }
+void VanDerWaals::resetToDefaults()
+{
+  constexpr float defaultOpacity = 1.0f;
 
+  auto* interface = m_layerManager.getSetting<LayerVdW>();
+
+  if (interface->opacity != defaultOpacity) {
+    interface->opacity = defaultOpacity;
+    m_opacity = defaultOpacity;
+    emit drawablesChanged();
+  }
+
+  QSettings settings;
+  settings.setValue("vdw/opacity", defaultOpacity);
+
+  if (interface->widget) {
+    auto sliders = interface->widget->findChildren<QSlider*>();
+    if (!sliders.isEmpty())
+      sliders.first()->setValue(static_cast<int>(defaultOpacity * 100));
+  }
+}
 void VanDerWaals::setOpacity(int opacity)
 {
   m_opacity = static_cast<float>(opacity) / 100.0f;
